@@ -1,2 +1,3 @@
-# nextjs-tailwind
-The basic Next.js environment with Tailwind
+# nextjs-starter
+
+A Next.js repo starts with primary libraries.
