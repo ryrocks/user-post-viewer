@@ -3,7 +3,19 @@ import Image from "next/image";
 
 import styles from "@/pages/index.module.css";
 
+import useInterval from "../lib/useInterval";
+
+import { Clock, Counter } from "../components";
+import { useStore } from "../lib/store";
+
 export default function Home() {
+  const { tick } = useStore();
+
+  // Tick the time every second
+  useInterval(() => {
+    tick(Date.now(), true);
+  }, 1000);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -45,6 +57,11 @@ export default function Home() {
               Instantly deploy your Next.js site to a public URL with Vercel.
             </p>
           </a>
+        </div>
+
+        <div className=" bg-gray-100 flex flex-col justify-center items-center">
+          <Clock />
+          <Counter />
         </div>
       </main>
 
