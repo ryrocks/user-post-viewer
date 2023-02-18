@@ -27,6 +27,6 @@
       ]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "__tests__/snapshot.js", "__tests__/index.test.jsx"],
   "exclude": ["node_modules"]
 }

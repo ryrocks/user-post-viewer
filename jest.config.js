@@ -7,27 +7,21 @@ const createJestConfig = nextJest({
 });
 
 // Add any custom config to be passed to Jest
+/** @type {import('jest').Config} */
 const customJestConfig = {
   // Add more setup options before each test is run
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
-  moduleNameMapper: {
-    // Handle CSS imports (with CSS modules)
-    // https://jestjs.io/docs/webpack#mocking-css-modules
-    "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy",
-
-    // Handle CSS imports (without CSS modules)
-    "^.+\\.(css|sass|scss)$": "<rootDir>/__mocks__/styleMock.js",
-
-    // Handle image imports
-    // https://jestjs.io/docs/webpack#handling-static-assets
-    "^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$/i": `<rootDir>/__mocks__/fileMock.js`,
-
-    // Handle module aliases (this will be automatically configured for you soon)
-    "^@/components/(.*)$": "<rootDir>/components/$1",
-    "^@/pages/(.*)$": "<rootDir>/pages/$1",
-  },
+  // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
   // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
   moduleDirectories: ["node_modules", "<rootDir>/"],
+
+  // If you're using [Module Path Aliases](https://nextjs.org/docs/advanced-features/module-path-aliases),
+  // you will have to add the moduleNameMapper in order for jest to resolve your absolute paths.
+  // The paths have to be matching with the paths option within the compilerOptions in the tsconfig.json
+  // For example:
+
+  moduleNameMapper: {
+    "@/(.*)$": "<rootDir>/src/$1",
+  },
   testEnvironment: "jest-environment-jsdom",
 };
 
