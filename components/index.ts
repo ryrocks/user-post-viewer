@@ -1,2 +1,1 @@
-export { default as Counter } from './counter';
-export { default as Clock } from './clock';
+export { default as ProgressSpinner } from "./ProgressSpinner";
