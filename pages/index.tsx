@@ -66,19 +66,21 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="p-5">
+      <main className="p-5 container mx-auto">
         <h1 className="text-3xl font-bold mb-5">User Post Viewer</h1>
         <div className="mb-5">
           <h2 className="text-xl font-bold mb-2">
             Please select a user to find their posts
           </h2>
-          <div className="flex flex-wrap">
+          <div className="flex flex-wrap ">
             {users?.map((user) => {
               return (
                 <button
                   key={user.id}
-                  className={`bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg mr-2 mb-2 ${
-                    user.id === activeUser?.id ? "bg-blue-500 text-white" : ""
+                  className={` font-semibold py-2 px-4 rounded-lg mr-2 mb-2 ${
+                    user.id === activeUser?.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-300 text-gray-700"
                   }`}
                   onClick={() => setActiveUser(user)}
                 >
@@ -96,51 +98,76 @@ export default function Home() {
             <div className="max-w-xl mx-auto">
               {filteredPosts?.map((post) => {
                 return (
-                  <div
-                    key={post.id}
-                    className="bg-gray-100 p-4 mb-2 rounded-lg"
-                  >
-                    <h3 className="text-lg font-bold mb-1 text-black">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-700">{post.body}</p>
-                    <div className="mt-2">
-                      <button
-                        className="px-4 py-1 text-sm font-medium text-blue-600 rounded hover:bg-blue-600 hover:text-white"
-                        onClick={() => expandPost(post.id)}
-                      >
-                        Expand
-                      </button>
+                  <div key={post.id} className="flex items-center">
+                    <div className="bg-gray-100 p-4 mb-2 rounded-lg basis-5/6">
+                      <h3 className="text-lg font-bold mb-1 text-black">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-700">{post.body}</p>
+
+                      {comments?.map((comment) => {
+                        if (comment.postId === post.id) {
+                          return (
+                            <div
+                              key={comment.id}
+                              className="bg-gray-50 p-2 mt-2 rounded-lg"
+                            >
+                              <p className="text-gray-700 font-medium">
+                                {comment.email}
+                              </p>
+                              <p className="text-gray-600">{comment.body}</p>
+                            </div>
+                          );
+                        }
+                      })}
                     </div>
-                    {comments?.map((comment) => {
-                      if (comment.postId === post.id) {
-                        return (
-                          <div
-                            key={comment.id}
-                            className="bg-gray-50 p-2 mt-2 rounded-lg"
+                    <div className="basis-1/6 text-center">
+                      {filteredPosts &&
+                        !filteredPosts.some(
+                          (filteredPost) =>
+                            filteredPost.id === post.id &&
+                            comments?.some(
+                              (comment) => comment.postId === post.id
+                            )
+                        ) && (
+                          <button
+                            className="inline-flex items-center p-2 text-sm font-medium text-white border border-white rounded-full hover:bg-blue-600 hover:border-blue-600"
+                            onClick={() => expandPost(post.id)}
                           >
-                            <p className="text-gray-700 font-medium">
-                              {comment.email}
-                            </p>
-                            <p className="text-gray-600">{comment.body}</p>
-                          </div>
-                        );
-                      }
-                    })}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              className="w-4 h-4"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                    </div>
                   </div>
                 );
               })}
               {posts?.length &&
               posts?.length > 3 &&
               displayPostNumber !== posts.length ? (
-                <button
-                  className="px-4 py-1 text-sm font-medium text-gray-200 rounded-lg hover:bg-gray-300 hover:text-gray-700"
-                  onClick={() => {
-                    setDisplayPostNumber(posts.length);
-                  }}
-                >
-                  Load all
-                </button>
+                <div className="flex">
+                  <div className="basis-5/6  text-right">
+                    <button
+                      className=" border px-4 py-1 text-sm font-medium text-gray-200 rounded-lg hover:bg-gray-300 hover:text-gray-700"
+                      onClick={() => {
+                        setDisplayPostNumber(posts.length);
+                      }}
+                    >
+                      Load all
+                    </button>
+                  </div>
+                  <div className="basis-1/6"></div>
+                </div>
               ) : null}
             </div>
           </div>
