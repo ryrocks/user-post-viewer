@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 
 ## Demo
-
+[Link](https://glittery-choux-d66fb0.netlify.app/)
 
 ## Performance
 ![Lighthouse](https://user-images.githubusercontent.com/9099197/220236168-e331463b-a6cf-46b3-b526-54be6a52cfb8.png)
