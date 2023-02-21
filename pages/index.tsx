@@ -14,38 +14,64 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [activeUser, setActiveUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [displayPostNumber, setDisplayPostNumber] = useState<number>(3);
 
   // https://jsonplaceholder.typicode.com/
   const getUsers = async () => {
+    setIsLoading(true);
     const res = await fetch("https://jsonplaceholder.typicode.com/users");
     const data: User[] = await res.json();
     setUsers(data);
+    setIsLoading(false);
   };
 
   const getPosts = async () => {
-    const res = await fetch("https://jsonplaceholder.typicode.com/posts");
+    setIsLoading(true);
+    const res = await fetch(
+      `https://jsonplaceholder.typicode.com/posts?userId=${activeUser?.id}`
+    );
     const data: Post[] = await res.json();
     setPosts(data);
+    setIsLoading(false);
   };
 
-  const getComments = async () => {
-    const res = await fetch("https://jsonplaceholder.typicode.com/comments");
+  const getComments = async (postId: number) => {
+    setIsLoading(true);
+    const res = await fetch(
+      `https://jsonplaceholder.typicode.com/comments?postId=${postId}`
+    );
     const data: Comment[] = await res.json();
     setComments(data);
+    setIsLoading(false);
   };
 
   const filteredPosts = useMemo(() => {
     if (activeUser) {
-      return posts.filter((post) => post.id === activeUser.id);
+      return posts
+        .filter((post) => post.userId === activeUser.id)
+        .slice(0, displayPostNumber);
     }
     return [];
-  }, [activeUser, posts]);
+  }, [activeUser, posts, displayPostNumber]);
+
+  useEffect(() => {
+    setDisplayPostNumber(3);
+  }, [activeUser]);
 
   useEffect(() => {
     getUsers();
-    getPosts();
-    getComments();
   }, []);
+
+  useEffect(() => {
+    if (activeUser) {
+      getPosts();
+    }
+  }, [activeUser]);
+
+  const expandPost = async (postId: number) => {
+    await getComments(postId);
+  };
 
   return (
     <>
@@ -55,37 +81,92 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main>
-        <h1 className="text-2xl">User Post Viewer</h1>
-        <h2 className="text-xl">Please select a user to find their comments</h2>
-        <ul className="flex">
-          {users.map((user) => {
-            return (
-              <li key={user.id}>
-                <button type="button" onClick={() => setActiveUser(user)}>
-                  {user.name}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        <section>
-          <h2 className="text-xl">Posts from {activeUser?.name}</h2>
-          <ul>
-            {filteredPosts.map((post) => {
+      <main className="p-5">
+        <h1 className="text-3xl font-bold mb-5">User Post Viewer</h1>
+        <div className="mb-5">
+          <h2 className="text-xl font-bold mb-2">
+            Please select a user to find their posts
+          </h2>
+          <div className="flex flex-wrap">
+            {users.map((user) => {
               return (
-                <li key={post.id}>
-                  <h3 className="text-lg">{post.title}</h3>
-                  <p>{post.body}</p>
-                </li>
+                <button
+                  key={user.id}
+                  className={`bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg mr-2 mb-2 ${
+                    user.id === activeUser?.id ? "bg-blue-500 text-white" : ""
+                  }`}
+                  onClick={() => setActiveUser(user)}
+                >
+                  {user.name.split(" ")[0]}
+                </button>
               );
             })}
-          </ul>
-        </section>
-        <div>
-          <ProgressSpinner size={3} />
+          </div>
         </div>
+        {activeUser && (
+          <div>
+            <h2 className="text-xl font-bold mb-2">
+              {activeUser.name}'s posts
+            </h2>
+            <div className="max-w-xl mx-auto">
+              {filteredPosts.map((post) => {
+                return (
+                  <div
+                    key={post.id}
+                    className="bg-gray-100 p-4 mb-2 rounded-lg"
+                  >
+                    <h3 className="text-lg font-bold mb-1 text-black">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-700">{post.body}</p>
+                    <div className="mt-2">
+                      <button
+                        className="px-4 py-1 text-sm font-medium text-blue-600 rounded hover:bg-blue-600 hover:text-white"
+                        onClick={() => expandPost(post.id)}
+                      >
+                        Expand
+                      </button>
+                    </div>
+                    {comments.map((comment) => {
+                      if (comment.postId === post.id) {
+                        return (
+                          <div
+                            key={comment.id}
+                            className="bg-gray-50 p-2 mt-2 rounded-lg"
+                          >
+                            <p className="text-gray-700 font-medium">
+                              {comment.email}
+                            </p>
+                            <p className="text-gray-600">{comment.body}</p>
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
+                );
+              })}
+              {posts.length > 3 && displayPostNumber !== posts.length ? (
+                <button
+                  className="px-4 py-1 text-sm font-medium text-gray-200 rounded-lg hover:bg-gray-300 hover:text-gray-700"
+                  onClick={() => {
+                    setDisplayPostNumber(posts.length);
+                  }}
+                >
+                  Load all
+                </button>
+              ) : null}
+            </div>
+          </div>
+        )}
       </main>
+      {isLoading ? (
+        <div className={`fixed inset-0 z-50  `}>
+          <div className="absolute inset-0 bg-gray-800 opacity-50"></div>
+          <div className="flex items-center justify-center h-full">
+            <ProgressSpinner size={4} />
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
