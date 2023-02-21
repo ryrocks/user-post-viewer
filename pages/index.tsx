@@ -76,6 +76,7 @@ export default function Home() {
             {users?.map((user) => {
               return (
                 <button
+                  role="user-button"
                   key={user.id}
                   className={` font-semibold py-2 px-4 rounded-lg mr-2 mb-2 ${
                     user.id === activeUser?.id
