@@ -1,55 +1,54 @@
 import Head from "next/head";
-import { Inter } from "@next/font/google";
 import { useEffect, useMemo, useState } from "react";
 import { User } from "domain/type/user";
 import { Post } from "domain/type/post";
 import { Comment } from "domain/type/comment";
 
 import { ProgressSpinner } from "../components";
-
-const inter = Inter({ subsets: ["latin"] });
+import useFetchData from "hooks/useFetchData";
+import { FetchResult } from "domain/interface/fetch";
 
 export default function Home() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
   const [activeUser, setActiveUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [displayPostNumber, setDisplayPostNumber] = useState<number>(3);
+  const {
+    data: users,
+    isLoading: isUsersLoading,
+    fetchData: fetchUsers,
+  }: FetchResult<User[]> = useFetchData<User[]>([]);
+  const {
+    data: posts,
+    isLoading: isPostsLoading,
+    fetchData: fetchPosts,
+  } = useFetchData<Post[]>([]);
+  const {
+    data: comments,
+    isLoading: isCommentsLoading,
+    fetchData: fetchComments,
+  } = useFetchData<Comment[]>([]);
 
-  // https://jsonplaceholder.typicode.com/
-  const getUsers = async () => {
-    setIsLoading(true);
-    const res = await fetch("https://jsonplaceholder.typicode.com/users");
-    const data: User[] = await res.json();
-    setUsers(data);
-    setIsLoading(false);
-  };
+  useEffect(() => {
+    fetchUsers("https://jsonplaceholder.typicode.com/users");
+  }, []);
 
-  const getPosts = async () => {
-    setIsLoading(true);
-    const res = await fetch(
-      `https://jsonplaceholder.typicode.com/posts?userId=${activeUser?.id}`
-    );
-    const data: Post[] = await res.json();
-    setPosts(data);
-    setIsLoading(false);
-  };
+  useEffect(() => {
+    if (activeUser) {
+      fetchPosts(
+        `https://jsonplaceholder.typicode.com/posts?userId=${activeUser.id}`
+      );
+    }
+  }, [activeUser]);
 
-  const getComments = async (postId: number) => {
-    setIsLoading(true);
-    const res = await fetch(
+  const expandPost = async (postId: number) => {
+    await fetchComments(
       `https://jsonplaceholder.typicode.com/comments?postId=${postId}`
     );
-    const data: Comment[] = await res.json();
-    setComments(data);
-    setIsLoading(false);
   };
 
   const filteredPosts = useMemo(() => {
     if (activeUser) {
       return posts
-        .filter((post) => post.userId === activeUser.id)
+        ?.filter((post) => post.userId === activeUser.id)
         .slice(0, displayPostNumber);
     }
     return [];
@@ -58,20 +57,6 @@ export default function Home() {
   useEffect(() => {
     setDisplayPostNumber(3);
   }, [activeUser]);
-
-  useEffect(() => {
-    getUsers();
-  }, []);
-
-  useEffect(() => {
-    if (activeUser) {
-      getPosts();
-    }
-  }, [activeUser]);
-
-  const expandPost = async (postId: number) => {
-    await getComments(postId);
-  };
 
   return (
     <>
@@ -88,7 +73,7 @@ export default function Home() {
             Please select a user to find their posts
           </h2>
           <div className="flex flex-wrap">
-            {users.map((user) => {
+            {users?.map((user) => {
               return (
                 <button
                   key={user.id}
@@ -109,7 +94,7 @@ export default function Home() {
               {activeUser.name}'s posts
             </h2>
             <div className="max-w-xl mx-auto">
-              {filteredPosts.map((post) => {
+              {filteredPosts?.map((post) => {
                 return (
                   <div
                     key={post.id}
@@ -127,7 +112,7 @@ export default function Home() {
                         Expand
                       </button>
                     </div>
-                    {comments.map((comment) => {
+                    {comments?.map((comment) => {
                       if (comment.postId === post.id) {
                         return (
                           <div
@@ -145,7 +130,9 @@ export default function Home() {
                   </div>
                 );
               })}
-              {posts.length > 3 && displayPostNumber !== posts.length ? (
+              {posts?.length &&
+              posts?.length > 3 &&
+              displayPostNumber !== posts.length ? (
                 <button
                   className="px-4 py-1 text-sm font-medium text-gray-200 rounded-lg hover:bg-gray-300 hover:text-gray-700"
                   onClick={() => {
@@ -159,7 +146,7 @@ export default function Home() {
           </div>
         )}
       </main>
-      {isLoading ? (
+      {isUsersLoading || isCommentsLoading || isPostsLoading ? (
         <div className={`fixed inset-0 z-50  `}>
           <div className="absolute inset-0 bg-gray-800 opacity-50"></div>
           <div className="flex items-center justify-center h-full">
