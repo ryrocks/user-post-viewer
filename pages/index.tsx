@@ -8,6 +8,12 @@ import { ProgressSpinner } from "../components";
 import useFetchData from "hooks/useFetchData";
 import { FetchResult } from "domain/interface/fetch";
 
+const filterTitle = new Map([
+  ["Mr.", "Mr."],
+  ["Mrs.", "Mrs."],
+  ["Miss", "Miss"],
+]);
+
 export default function Home() {
   const [activeUser, setActiveUser] = useState<User | null>(null);
   const [displayPostNumber, setDisplayPostNumber] = useState<number>(3);
@@ -85,7 +91,9 @@ export default function Home() {
                   }`}
                   onClick={() => setActiveUser(user)}
                 >
-                  {user.name.split(" ")[0]}
+                  {filterTitle.get(user.name.split(" ")[0])
+                    ? user.name.split(" ")[1]
+                    : user.name.split(" ")[0]}
                 </button>
               );
             })}
